@@ -5,3 +5,4 @@ ChatExport_*
 *.pdf
 .git
 **/__pycache__
+.claude
