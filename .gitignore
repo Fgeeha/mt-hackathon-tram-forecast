@@ -2,4 +2,12 @@
 __pycache__/
 .venv/
 .env
-data/
+data/*
+!data/external/
+# Выгрузки чатов Telegram
+ChatExport_*/
+# Датасет организаторов
+dataset.zip
+dataset/
+# Материалы организаторов
+*.pdf

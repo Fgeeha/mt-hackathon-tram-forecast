@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Трамваи Москвы — прогноз пассажиропотока</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+  :root { --bg:#f5f6f8; --panel:#fff; --ink:#1d2330; --muted:#6b7280; --line:#e3e6eb; --acc:#d7263d; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:center; gap:16px; padding:10px 16px; background:var(--ink); color:#fff; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  header nav button { background:none; border:0; color:#cbd2dc; font:inherit; padding:6px 10px; cursor:pointer; border-radius:6px; }
+  header nav button.on { background:#343c4d; color:#fff; }
+  .layout { display:grid; grid-template-columns:300px 1fr; height:calc(100vh - 48px); }
+  aside { background:var(--panel); border-right:1px solid var(--line); padding:12px 14px; overflow:auto; }
+  aside h3 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:14px 0 6px; }
+  label { display:block; margin:6px 0 2px; color:var(--muted); font-size:12px; }
+  select, input[type=date], input[type=number] { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font:inherit; background:#fff; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg button { flex:1; border:0; background:#fff; padding:7px 0; cursor:pointer; font:inherit; }
+  .seg button.on { background:var(--ink); color:#fff; }
+  .routes { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .routes label { margin:0; display:flex; align-items:center; justify-content:center; gap:3px; border:1px solid var(--line); border-radius:6px; padding:4px 0; cursor:pointer; color:var(--ink); font-size:13px; }
+  .routes input { margin:0; }
+  .row { display:flex; gap:8px; } .row > * { flex:1; }
+  .coef { display:grid; grid-template-columns:78px 1fr 40px; align-items:center; gap:6px; margin:4px 0; font-size:12px; }
+  .btns { display:flex; gap:8px; margin-top:8px; } .btns button { flex:1; }
+  button.act { padding:8px; border:1px solid var(--ink); background:#fff; border-radius:6px; cursor:pointer; font:inherit; }
+  button.act:hover { background:var(--ink); color:#fff; }
+  main { display:grid; grid-template-rows:auto 1fr 300px; min-width:0; }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:10px 12px; }
+  .kpi { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px; }
+  .kpi b { display:block; font-size:20px; } .kpi span { color:var(--muted); font-size:12px; }
+  #mapwrap { position:relative; margin:0 12px; border-radius:8px; overflow:hidden; border:1px solid var(--line); }
+  #map { position:absolute; inset:0; }
+  .player { position:absolute; left:10px; right:10px; bottom:10px; background:rgba(255,255,255,.95); border-radius:8px; padding:8px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+  .player input[type=range] { flex:1; }
+  .legend { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.95); padding:6px 10px; border-radius:6px; font-size:12px; }
+  .legend i { display:inline-block; width:40px; height:8px; background:linear-gradient(90deg,#2b83ba,#abdda4,#fdae61,#d7191c); vertical-align:middle; margin:0 6px; }
+  #chart { margin:10px 12px 12px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  #err { position:fixed; right:16px; bottom:16px; background:var(--acc); color:#fff; padding:10px 14px; border-radius:8px; display:none; max-width:420px; }
+  #quality { display:none; padding:16px; overflow:auto; height:calc(100vh - 48px); }
+  table { border-collapse:collapse; background:#fff; width:100%; max-width:900px; }
+  th, td { border:1px solid var(--line); padding:6px 10px; text-align:right; } th:first-child, td:first-child, td:nth-child(2) { text-align:left; }
+  .best { font-weight:700; color:#0a7a3b; }
+  .note { color:var(--muted); font-size:12px; max-width:900px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🚋 Прогноз пассажиропотока трамваев Москвы</h1>
+  <nav><button id="tabDash" class="on">Дашборд</button><button id="tabQual">Качество модели</button><a href="/docs" style="color:#cbd2dc;margin-left:8px">API</a></nav>
+</header>
+
+<div class="layout" id="dash">
+  <aside>
+    <h3>Горизонт</h3>
+    <div class="seg" id="horizon">
+      <button data-v="day" class="on">День</button><button data-v="month">Месяц</button><button data-v="year">Год</button>
+    </div>
+    <label>Начало периода</label>
+    <input type="date" id="start" value="2025-11-01" min="2025-11-01" max="2026-10-31">
+
+    <h3>Маршруты</h3>
+    <div class="routes" id="routes"></div>
+    <label>Остановка (оценка доли маршрута)</label>
+    <select id="stop"><option value="">— весь маршрут —</option></select>
+
+    <h3>Интервал и агрегация</h3>
+    <div class="row">
+      <div><label>Час с</label><input type="number" id="hFrom" min="0" max="23" value="0"></div>
+      <div><label>по</label><input type="number" id="hTo" min="0" max="23" value="23"></div>
+    </div>
+    <label>Агрегация графика</label>
+    <select id="agg">
+      <option value="auto">авто (по горизонту)</option><option value="hour">по часам</option>
+      <option value="day">по дням</option><option value="week">по неделям</option>
+      <option value="month">по месяцам</option><option value="hour_of_day">профиль по часам суток</option>
+    </select>
+
+    <h3>Корректирующие коэффициенты</h3>
+    <div class="coef"><span>Погода</span><input type="range" id="k_weather" min="0.5" max="1.5" step="0.01" value="1"><output>1.00</output></div>
+    <div class="coef"><span>Событие</span><input type="range" id="k_event" min="0.5" max="1.5" step="0.01" value="1"><output>1.00</output></div>
+    <div class="coef"><span>Сезон</span><input type="range" id="k_season" min="0.5" max="1.5" step="0.01" value="1"><output>1.00</output></div>
+    <div class="note">Например: сильный снегопад −5…−10 %, массовое мероприятие у маршрута +20 %, предновогодняя неделя −10 %.</div>
+
+    <h3>Выгрузка</h3>
+    <div class="btns"><button class="act" id="csv">CSV</button><button class="act" id="xlsx">XLSX</button></div>
+  </aside>
+
+  <main>
+    <div class="kpis">
+      <div class="kpi"><span>Прогноз посадок за период</span><b id="kTotal">—</b></div>
+      <div class="kpi"><span>К профилю последних 4 недель</span><b id="kBase">—</b></div>
+      <div class="kpi"><span>Пиковый час</span><b id="kPeak">—</b></div>
+      <div class="kpi"><span>Макс. посадок на вагон в час</span><b id="kVeh">—</b></div>
+    </div>
+    <div id="mapwrap">
+      <div id="map"></div>
+      <div class="legend">посадки/час<i></i>меньше → больше</div>
+      <div class="player">
+        <button class="act" id="play" style="width:44px">▶</button>
+        <span id="clock" style="min-width:150px">—</span>
+        <input type="range" id="slot" min="0" max="23" value="8">
+      </div>
+    </div>
+    <div id="chart"></div>
+  </main>
+</div>
+
+<div id="quality"></div>
+<div id="err"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const COLORS = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#a65628','#f781bf','#17becf','#666','#bcbd22'];
+const state = { horizon: 'day', geo: {}, meta: null, day: {}, playing: null };
+const chart = echarts.init($('chart'));
+const fmt = (x) => Math.round(x).toLocaleString('ru-RU');
+
+function showError(msg) {
+  const e = $('err'); e.textContent = msg; e.style.display = 'block';
+  clearTimeout(showError.t); showError.t = setTimeout(() => e.style.display = 'none', 6000);
+}
+
+async function api(path) {
+  let r;
+  try { r = await fetch(path); } catch (e) { showError('Сервис недоступен: ' + e.message); throw e; }
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    showError(body.error || ('Ошибка ' + r.status)); throw new Error(body.error);
+  }
+  return r.json();
+}
+
+function selectedRoutes() { return [...document.querySelectorAll('#routes input:checked')].map((i) => +i.value); }
+
+function params(extra = {}) {
+  const p = new URLSearchParams({
+    horizon: state.horizon, start: $('start').value, hour_from: $('hFrom').value, hour_to: $('hTo').value,
+    k_weather: $('k_weather').value, k_event: $('k_event').value, k_season: $('k_season').value, ...extra,
+  });
+  selectedRoutes().forEach((r) => p.append('route', r));
+  if ($('stop').value) p.set('stop_id', $('stop').value);
+  return p;
+}
+
+function chartAgg() {
+  const a = $('agg').value;
+  if (a !== 'auto') return a;
+  return { day: 'hour', month: 'day', year: 'week' }[state.horizon];
+}
+
+async function refresh() {
+  const agg = chartAgg();
+  const [series, total, prof] = await Promise.all([
+    api('/api/forecast?' + params({ agg })),
+    api('/api/forecast?' + params({ agg: 'total' })),
+    api('/api/forecast?' + params({ agg: 'hour' })),
+  ]);
+  const t = total.rows[0] || { prediction: 0, baseline: 0 };
+  $('kTotal').textContent = fmt(t.prediction);
+  $('kBase').textContent = t.baseline ? ((t.prediction / t.baseline - 1) * 100).toFixed(1).replace('.', ',') + ' %' : '—';
+  const byHour = {};
+  prof.rows.forEach((r) => { byHour[r.hour] = (byHour[r.hour] || 0) + r.prediction; });
+  const peak = Object.entries(byHour).sort((a, b) => b[1] - a[1])[0];
+  $('kPeak').textContent = peak ? `${peak[0]}:00–${+peak[0] + 1}:00` : '—';
+  const veh = prof.rows.filter((r) => r.per_vehicle != null).sort((a, b) => b.per_vehicle - a.per_vehicle)[0];
+  $('kVeh').textContent = veh && !$('stop').value ? `${fmt(veh.per_vehicle)} (№${veh.route}, ${veh.hour}:00)` : '—';
+  drawChart(series.rows, agg);
+  await loadDay();
+}
+
+function drawChart(rows, agg) {
+  const xKey = { hour: (r) => `${r.date} ${String(r.hour).padStart(2, '0')}:00`, day: (r) => r.date, week: (r) => r.week,
+    month: (r) => r.month, hour_of_day: (r) => `${r.hour}:00` }[agg];
+  const byRoute = {};
+  rows.forEach((r) => { const k = r.route ?? 'Все'; (byRoute[k] ||= []).push(r); });
+  const xs = [...new Set(rows.map(xKey))];
+  const series = [];
+  Object.entries(byRoute).forEach(([route, rs], i) => {
+    const m = Object.fromEntries(rs.map((r) => [xKey(r), r]));
+    series.push({ name: `№${route} прогноз`, type: 'line', showSymbol: false, color: COLORS[i % 10],
+      data: xs.map((x) => m[x] ? +m[x].prediction.toFixed(1) : null) });
+    if (Object.keys(byRoute).length <= 3) series.push({ name: `№${route} профиль 4 нед.`, type: 'line', showSymbol: false,
+      color: COLORS[i % 10], lineStyle: { type: 'dashed', opacity: .6 }, data: xs.map((x) => m[x] ? +m[x].baseline.toFixed(1) : null) });
+  });
+  chart.setOption({
+    grid: { left: 60, right: 20, top: 36, bottom: 50 }, tooltip: { trigger: 'axis' },
+    legend: { type: 'scroll', top: 4 }, dataZoom: [{ type: 'inside' }, { type: 'slider', height: 16, bottom: 8 }],
+    xAxis: { type: 'category', data: xs }, yAxis: { type: 'value', name: 'посадки' }, series,
+  }, true);
+}
+
+// ---------- карта ----------
+const map = new maplibregl.Map({
+  container: 'map', center: [37.64, 55.76], zoom: 10.3,
+  style: { version: 8, sources: { base: { type: 'raster', tileSize: 256,
+    tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], attribution: '© участники OpenStreetMap' } },
+    layers: [{ id: 'base', type: 'raster', source: 'base', paint: { 'raster-saturation': -0.8, 'raster-opacity': 0.8 } }] },
+});
+
+function stopsGeoJSON(slot) {
+  const d = state.dayRows || {};
+  const feats = [];
+  Object.entries(state.geo).forEach(([route, g]) => {
+    const v = d[`${route}|${slot}`] || 0;
+    g.stops.forEach((s) => feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+      properties: { route: +route, name: s.name, stop_id: s.stop_id, value: v * s.share } }));
+  });
+  return { type: 'FeatureCollection', features: feats };
+}
+
+function linesGeoJSON() {
+  const feats = [];
+  Object.entries(state.geo).forEach(([route, g], i) => g.lines.forEach((l) => feats.push({ type: 'Feature',
+    geometry: { type: 'LineString', coordinates: l }, properties: { route: +route, color: COLORS[i % 10] } })));
+  return { type: 'FeatureCollection', features: feats };
+}
+
+async function loadDay() {
+  // Карта всегда показывает сутки: первый день выбранного периода.
+  const date = $('start').value;
+  const r = await api('/api/forecast?' + new URLSearchParams({ date_from: date, date_to: date, agg: 'hour',
+    k_weather: $('k_weather').value, k_event: $('k_event').value, k_season: $('k_season').value }));
+  state.dayRows = Object.fromEntries(r.rows.map((x) => [`${x.route}|${x.hour}`, x.prediction]));
+  state.dayMax = Math.max(1, ...Object.entries(state.geo).flatMap(([route, g]) =>
+    g.stops.map((s) => (state.dayRows[`${route}|8`] || 0) * s.share)));
+  updateMap();
+}
+
+function updateMap() {
+  const slot = +$('slot').value;
+  $('clock').textContent = `${$('start').value}, ${String(slot).padStart(2, '0')}:00`;
+  const src = map.getSource('stops');
+  if (!src) return;
+  src.setData(stopsGeoJSON(slot));
+  const m = state.dayMax || 1;
+  map.setPaintProperty('stops', 'circle-color', ['interpolate', ['linear'], ['get', 'value'],
+    0, '#2b83ba', m * .33, '#abdda4', m * .66, '#fdae61', m, '#d7191c']);
+  map.setPaintProperty('stops', 'circle-radius', ['interpolate', ['linear'], ['get', 'value'], 0, 3, m, 14]);
+}
+
+map.on('load', async () => {
+  map.addSource('lines', { type: 'geojson', data: linesGeoJSON() });
+  map.addLayer({ id: 'lines', type: 'line', source: 'lines', paint: { 'line-color': ['get', 'color'], 'line-width': 3, 'line-opacity': .55 } });
+  map.addSource('stops', { type: 'geojson', data: stopsGeoJSON(8) });
+  map.addLayer({ id: 'stops', type: 'circle', source: 'stops', paint: { 'circle-radius': 5, 'circle-color': '#2b83ba',
+    'circle-stroke-color': '#fff', 'circle-stroke-width': 1, 'circle-opacity': .9 } });
+  map.on('click', 'stops', (e) => {
+    const p = e.features[0].properties;
+    document.querySelectorAll('#routes input').forEach((i) => { i.checked = +i.value === p.route; });
+    fillStops(); $('stop').value = p.stop_id; refresh();
+    new maplibregl.Popup().setLngLat(e.lngLat).setHTML(`<b>${p.name}</b><br>маршрут №${p.route}<br>≈ ${fmt(p.value)} посадок/час`).addTo(map);
+  });
+  map.on('mouseenter', 'stops', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'stops', () => map.getCanvas().style.cursor = '');
+  updateMap();
+});
+
+// ---------- элементы управления ----------
+function fillStops() {
+  const sel = $('stop'); const rs = selectedRoutes();
+  sel.innerHTML = '<option value="">— весь маршрут —</option>';
+  if (rs.length !== 1 || !state.geo[rs[0]]) return;
+  state.geo[rs[0]].stops.forEach((s) => sel.add(new Option(`${s.name} (напр. ${s.dir}, №${s.seq})`, s.stop_id)));
+}
+
+$('horizon').addEventListener('click', (e) => {
+  if (!e.target.dataset.v) return;
+  state.horizon = e.target.dataset.v;
+  document.querySelectorAll('#horizon button').forEach((b) => b.classList.toggle('on', b === e.target));
+  refresh();
+});
+['start', 'hFrom', 'hTo', 'agg', 'stop'].forEach((id) => $(id).addEventListener('change', refresh));
+['k_weather', 'k_event', 'k_season'].forEach((id) => $(id).addEventListener('input', (e) => {
+  e.target.nextElementSibling.textContent = (+e.target.value).toFixed(2);
+  clearTimeout(refresh.t); refresh.t = setTimeout(refresh, 150);
+}));
+$('slot').addEventListener('input', updateMap);
+$('play').addEventListener('click', () => {
+  if (state.playing) { clearInterval(state.playing); state.playing = null; $('play').textContent = '▶'; return; }
+  $('play').textContent = '⏸';
+  state.playing = setInterval(() => { $('slot').value = (+$('slot').value + 1) % 24; updateMap(); }, 700);
+});
+$('csv').addEventListener('click', () => location.href = '/api/export?' + params({ format: 'csv', agg: chartAgg() }));
+$('xlsx').addEventListener('click', () => location.href = '/api/export?' + params({ format: 'xlsx', agg: chartAgg() }));
+
+function tab(q) {
+  $('dash').style.display = q ? 'none' : 'grid'; $('quality').style.display = q ? 'block' : 'none';
+  $('tabDash').classList.toggle('on', !q); $('tabQual').classList.toggle('on', q);
+  if (!q) chart.resize();
+}
+$('tabDash').onclick = () => tab(false);
+$('tabQual').onclick = async () => {
+  tab(true);
+  const m = await api('/api/metrics');
+  const names = { blend_lgbm_profile: 'LightGBM + профиль (итог)', naive_last_week: 'Наивный: прошлая неделя', profile_4w: 'Профиль 4 недель',
+    profile_4w_no_calendar: 'Профиль 4 недель без календаря', ablation_no_weather: 'Абляция: без погоды', ablation_no_calendar: 'Абляция: без флагов праздников/каникул' };
+  const byOrigin = {};
+  m.windows.forEach((w) => (byOrigin[w.origin] ||= []).push(w));
+  let html = `<h2>Бэктест с растущим окном (rolling origin), горизонт до ${m.horizon_days} дней</h2>
+    <table><tr><th>Точка прогноза</th><th>Модель</th><th>WAPE-score (час)</th><th>WAPE-score пик</th><th>WAPE-score (сутки)</th><th>MAE</th></tr>`;
+  Object.entries(byOrigin).forEach(([o, ws]) => {
+    const best = Math.max(...ws.map((w) => w.wape_score));
+    ws.forEach((w) => html += `<tr><td>${o}</td><td>${names[w.model] || w.model}</td><td class="${w.wape_score === best ? 'best' : ''}">${w.wape_score.toFixed(4)}</td>
+      <td>${w.wape_score_peak.toFixed(4)}</td><td>${w.wape_score_day.toFixed(4)}</td><td>${w.mae.toFixed(1)}</td></tr>`);
+  });
+  html += `</table><p class="note">WAPE-score = 1 − Σ|y−ŷ|/Σy. Пик — часы 7–9 и 17–19. Каждое окно обучается только на данных до точки прогноза.</p>
+    <h2>Важность признаков (gain)</h2><div id="imp" style="height:420px;max-width:900px;background:#fff"></div>`;
+  $('quality').innerHTML = html;
+  const imp = Object.entries(m.feature_importance_gain).sort((a, b) => a[1] - b[1]);
+  echarts.init($('imp')).setOption({ grid: { left: 140, right: 20, top: 10, bottom: 20 }, xAxis: { type: 'value' },
+    yAxis: { type: 'category', data: imp.map((x) => x[0]) }, series: [{ type: 'bar', data: imp.map((x) => x[1]), color: '#377eb8' }] });
+};
+
+window.addEventListener('resize', () => chart.resize());
+
+(async () => {
+  const [meta, geo] = await Promise.all([api('/api/meta'), api('/api/geo')]);
+  state.meta = meta; state.geo = geo;
+  $('routes').innerHTML = meta.routes.map((r) => `<label title="${r.name}"><input type="checkbox" value="${r.route}" ${r.route === 17 ? 'checked' : ''}>${r.route}</label>`).join('');
+  $('routes').addEventListener('change', () => { fillStops(); refresh(); });
+  if (map.getSource('lines')) map.getSource('lines').setData(linesGeoJSON());
+  fillStops();
+  await refresh();
+})();
+</script>
+</body>
+</html>

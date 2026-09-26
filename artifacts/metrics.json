@@ -1,0 +1,149 @@
+{
+  "windows": [
+    {
+      "origin": "2025-03-01",
+      "model": "blend_lgbm_profile",
+      "wape_score": 0.8715,
+      "mae": 128.09,
+      "wape_score_peak": 0.8875,
+      "wape_score_day": 0.9004
+    },
+    {
+      "origin": "2025-03-01",
+      "model": "ablation_no_weather",
+      "wape_score": 0.8752,
+      "mae": 124.47,
+      "wape_score_peak": 0.8905,
+      "wape_score_day": 0.9058
+    },
+    {
+      "origin": "2025-03-01",
+      "model": "ablation_no_calendar",
+      "wape_score": 0.8715,
+      "mae": 128.16,
+      "wape_score_peak": 0.8876,
+      "wape_score_day": 0.9005
+    },
+    {
+      "origin": "2025-03-01",
+      "model": "naive_last_week",
+      "wape_score": 0.8635,
+      "mae": 136.13,
+      "wape_score_peak": 0.8799,
+      "wape_score_day": 0.9036
+    },
+    {
+      "origin": "2025-03-01",
+      "model": "profile_4w",
+      "wape_score": 0.8693,
+      "mae": 130.33,
+      "wape_score_peak": 0.8864,
+      "wape_score_day": 0.8984
+    },
+    {
+      "origin": "2025-03-01",
+      "model": "profile_4w_no_calendar",
+      "wape_score": 0.8679,
+      "mae": 131.69,
+      "wape_score_peak": 0.8841,
+      "wape_score_day": 0.9003
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "blend_lgbm_profile",
+      "wape_score": 0.8438,
+      "mae": 147.21,
+      "wape_score_peak": 0.8695,
+      "wape_score_day": 0.883
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "ablation_no_weather",
+      "wape_score": 0.841,
+      "mae": 149.84,
+      "wape_score_peak": 0.8665,
+      "wape_score_day": 0.8807
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "ablation_no_calendar",
+      "wape_score": 0.8462,
+      "mae": 144.94,
+      "wape_score_peak": 0.8708,
+      "wape_score_day": 0.8863
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "naive_last_week",
+      "wape_score": 0.7835,
+      "mae": 204.09,
+      "wape_score_peak": 0.7903,
+      "wape_score_day": 0.8229
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "profile_4w",
+      "wape_score": 0.8476,
+      "mae": 143.69,
+      "wape_score_peak": 0.8712,
+      "wape_score_day": 0.8924
+    },
+    {
+      "origin": "2025-04-01",
+      "model": "profile_4w_no_calendar",
+      "wape_score": 0.8219,
+      "mae": 167.84,
+      "wape_score_peak": 0.8375,
+      "wape_score_day": 0.8656
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "blend_lgbm_profile",
+      "wape_score": 0.9026,
+      "mae": 96.12,
+      "wape_score_peak": 0.9096,
+      "wape_score_day": 0.9443
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "ablation_no_weather",
+      "wape_score": 0.9021,
+      "mae": 96.63,
+      "wape_score_peak": 0.9112,
+      "wape_score_day": 0.941
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "ablation_no_calendar",
+      "wape_score": 0.9017,
+      "mae": 96.98,
+      "wape_score_peak": 0.9107,
+      "wape_score_day": 0.9435
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "naive_last_week",
+      "wape_score": 0.8861,
+      "mae": 112.4,
+      "wape_score_peak": 0.8968,
+      "wape_score_day": 0.9303
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "profile_4w",
+      "wape_score": 0.9004,
+      "mae": 98.26,
+      "wape_score_peak": 0.9097,
+      "wape_score_day": 0.9411
+    },
+    {
+      "origin": "2025-10-01",
+      "model": "profile_4w_no_calendar",
+      "wape_score": 0.8999,
+      "mae": 98.77,
+      "wape_score_peak": 0.9097,
+      "wape_score_day": 0.9414
+    }
+  ],
+  "horizon_days": 61
+}

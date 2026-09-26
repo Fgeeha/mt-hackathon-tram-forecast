@@ -1,0 +1,18 @@
+name: tram-forecast
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: tram-forecast:latest
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      WORKERS: ${WORKERS:-4}
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 2g
+    restart: unless-stopped

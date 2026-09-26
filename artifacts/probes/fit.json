@@ -1,0 +1,93 @@
+{
+  "nov01": {
+    "sum_p": 246310,
+    "delta_score": -0.0006,
+    "mu": 0.9176,
+    "multiplier": 0.938
+  },
+  "nov_work": {
+    "sum_p": 4449386,
+    "delta_score": -0.00287,
+    "mu": 0.9803,
+    "multiplier": 1.002
+  },
+  "nov_off": {
+    "sum_p": 1381851,
+    "delta_score": -0.0013,
+    "mu": 0.9707,
+    "multiplier": 0.992
+  },
+  "dec_work": {
+    "sum_p": 4952569,
+    "delta_score": -0.00412,
+    "mu": 0.9742,
+    "multiplier": 0.996
+  },
+  "dec_off": {
+    "sum_p": 777583,
+    "delta_score": -0.00049,
+    "mu": 0.9808,
+    "multiplier": 1.003
+  },
+  "dec27_31": {
+    "sum_p": 863850,
+    "delta_score": -0.00161,
+    "mu": 0.9407,
+    "multiplier": 0.962
+  },
+  "route1": {
+    "sum_p": 1148795,
+    "delta_score": -0.00105,
+    "mu": 0.9716,
+    "multiplier": 0.993
+  },
+  "route7": {
+    "sum_p": 1344272,
+    "delta_score": -0.00214,
+    "mu": 0.9498,
+    "multiplier": 0.971
+  },
+  "route11": {
+    "sum_p": 1851064,
+    "delta_score": -0.00082,
+    "mu": 0.9869,
+    "multiplier": 1.009
+  },
+  "route12": {
+    "sum_p": 1945503,
+    "delta_score": -0.00222,
+    "mu": 0.9644,
+    "multiplier": 0.986
+  },
+  "route17": {
+    "sum_p": 3034486,
+    "delta_score": -0.00329,
+    "mu": 0.9662,
+    "multiplier": 0.988
+  },
+  "route25": {
+    "sum_p": 502423,
+    "delta_score": -0.001,
+    "mu": 0.9362,
+    "multiplier": 0.957
+  },
+  "route26": {
+    "sum_p": 1098768,
+    "delta_score": -0.0009,
+    "mu": 0.9746,
+    "multiplier": 0.996
+  },
+  "route28": {
+    "sum_p": 642203,
+    "delta_score": -8e-05,
+    "mu": 0.9975,
+    "multiplier": 1.02
+  },
+  "route50": {
+    "sum_p": 1104035,
+    "delta_score": 0.0005,
+    "mu": 1.0176,
+    "multiplier": 1.04
+  },
+  "route5_daily": 5000
+}

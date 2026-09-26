@@ -1,0 +1,7 @@
+.venv
+data
+dataset.zip
+ChatExport_*
+*.pdf
+.git
+**/__pycache__
