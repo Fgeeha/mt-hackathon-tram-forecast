@@ -12,6 +12,7 @@
 3. Запускаемый веб-сервис (Docker Compose, backend + frontend, API, инструкция для жюри):
    https://github.com/Fgeeha/mt-hackathon-tram-forecast#быстрый-старт-для-жюри
    API: https://github.com/Fgeeha/mt-hackathon-tram-forecast#api
+   готовый образ: ghcr.io/fgeeha/mt-hackathon-tram-forecast:latest (публикуется CI: https://github.com/Fgeeha/mt-hackathon-tram-forecast/actions)
 4. Схема архитектуры и модулей, область определения и адаптации, зависимости от внешних данных:
    https://github.com/Fgeeha/mt-hackathon-tram-forecast#архитектура
    https://github.com/Fgeeha/mt-hackathon-tram-forecast#область-применимости
