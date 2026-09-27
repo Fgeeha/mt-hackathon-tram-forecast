@@ -6,7 +6,7 @@ on:
   pull_request:
 
 env:
-  IMAGE: ghcr.io/${{ github.repository }}
+  IMAGE: ghcr.io/fgeeha/mt-hackathon-tram-forecast
 
 jobs:
   check:
@@ -31,6 +31,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -48,6 +49,7 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Smoke test published image
         run: |
+          docker pull ${IMAGE}:${{ github.sha }}
           docker run -d --rm -p 8000:8000 --name smoke ${IMAGE}:${{ github.sha }}
           for i in $(seq 1 30); do curl -fs localhost:8000/api/health && break; sleep 2; done
           curl -fs 'localhost:8000/api/forecast?horizon=day&route=17&agg=hour' | head -c 200
