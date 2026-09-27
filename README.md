@@ -25,6 +25,13 @@ make up-local          # = docker compose -f docker/docker-compose.yml --env-fil
 Образ самодостаточен. Внутри лежат только готовые артефакты из `artifacts/`,
 поэтому датасет для запуска сервиса не нужен.
 
+Без сборки: готовый образ публикуется CI в GitHub Container Registry при каждом
+push в `master` (`.github/workflows/ci.yml`: ruff, pytest, сборка, smoke-тест).
+
+```bash
+docker run -d -p 8000:8000 ghcr.io/fgeeha/mt-hackathon-tram-forecast:latest
+```
+
 Воспроизвести весь пайплайн от сырых данных:
 
 ```bash
