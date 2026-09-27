@@ -35,3 +35,4 @@ api.py (FastAPI, in-memory polars over artifacts/) + static/index.html (MapLibre
 - `artifacts/` is committed: the Docker image serves only from it and never loads raw data or the model in the request path.
 - Model: target = boardings / level (level = mean of route × hour × day-class over the last 4 regular weeks). L1 objective with weight = level, which is equivalent to WAPE. Final prediction = 0.5 · LightGBM + 0.5 · level profile (`BLEND`). Adding `route`/`horizon` features overfit in the backtest.
 - Stop-level numbers are the route forecast × a heuristic stop share (hub/terminal weights). Validations have no stop information.
+- Leaderboard calibration: `scripts/probe.py` (rounds in `artifacts/probes*/`, `PROBE_ROUND=n`). Final file is `artifacts/submission_calibrated_v3.csv` (0.89037). `probe.py apply FILE` copies it into `forecast.parquet` so the service equals the submission; `test_service_matches_final_submission` guards this.

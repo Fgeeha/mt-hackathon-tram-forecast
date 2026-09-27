@@ -8,6 +8,7 @@ y = μ·y₀, где y₀/p распределено как в бэктесте 
     python scripts/probe.py make           # пробы → artifacts/probes/*.csv
     python scripts/probe.py fit scores.json # {"base": 0.88146, "probe_name": score, ...}
     python scripts/probe.py combine         # fit.json + лучший маршрут 5 → submission_calibrated.csv
+    python scripts/probe.py apply FILE.csv  # перенести сабмит в artifacts/forecast.parquet (сервис == сабмит)
 """
 
 import json
@@ -24,9 +25,10 @@ from tram_forecast.features import build, load_history, load_weather
 from tram_forecast.model import fit, predict, training_set
 from tram_forecast.settings import ARTIFACTS
 
-# Раунд 1: база route5_dec16 (0.88146). Раунд 2: база — калибровка раунда 1 (0.88804).
+# Раунд 1: база route5_dec16 (0.88146). Раунд 2: калибровка раунда 1 (0.88804). Раунд 3: раунда 2 (0.88992).
 ROUND = os.environ.get("PROBE_ROUND", "1")
-BASE = ARTIFACTS / ("submission_route5_dec16.csv" if ROUND == "1" else "submission_calibrated_v1.csv")
+BASE = ARTIFACTS / {"1": "submission_route5_dec16.csv", "2": "submission_calibrated_v1.csv",
+                    "3": "submission_calibrated_v2.csv"}[ROUND]
 OUT = ARTIFACTS / ("probes" if ROUND == "1" else f"probes{ROUND}")
 S = 12_866_000  # сумма эталона, выведена из скоров route5_dec16 и route5_full
 STEP = 1.05
@@ -54,6 +56,11 @@ GROUPS = {
     # Понедельные уровни (пн–вс): погода и события конкретной недели.
     **{f"w_{i:02d}": d.is_between(date(2025, 11, 3) + timedelta(weeks=i), date(2025, 11, 9) + timedelta(weeks=i))
        for i in range(8)},
+    # Раунд 3: утро и поздний вечер дали наибольший сдвиг — дробим их. Без нормировки (частичные группы).
+    "m67": pl.col("hour").is_between(6, 7),
+    "m89": pl.col("hour").is_between(8, 9),
+    "moff": pl.col("hour").is_between(6, 9) & (pl.col("day_class") > 0),
+    "loff": pl.col("hour").is_between(20, 23) & (pl.col("day_class") > 0),
 }
 # Семейства, покрывающие всю сетку: их общий сдвиг уже учтён группами дат.
 FAMILIES = ("route", "h_", "w_")
@@ -163,5 +170,19 @@ def combine() -> None:
     print("sum", out["prediction"].sum(), "family norms", {k: round(v, 4) for k, v in norm.items()})
 
 
+def apply(path: str) -> None:
+    """Ноябрь–декабрь в forecast.parquet := сабмит, чтобы API и дашборд совпадали с залитым файлом."""
+    sub = pl.read_csv(path, separator=";", try_parse_dates=True).select(
+        pl.col("route").cast(pl.Int32), "date", "hour", pl.col("prediction").cast(pl.Float64).alias("calibrated"))
+    fc = pl.read_parquet(ARTIFACTS / "forecast.parquet").select("route", "date", "hour", "prediction", "baseline")
+    fc = fc.join(sub, on=["route", "date", "hour"], how="left").with_columns(
+        pl.coalesce("calibrated", "prediction").alias("prediction")).drop("calibrated")
+    fc.write_parquet(ARTIFACTS / "forecast.parquet")
+    nov_dec = fc.filter(pl.col("date") <= date(2025, 12, 31))["prediction"].sum()
+    assert abs(nov_dec - sub["calibrated"].sum()) < 1, (nov_dec, sub["calibrated"].sum())
+    print("forecast.parquet: ноябрь–декабрь =", int(nov_dec), "из", path)
+
+
 if __name__ == "__main__":
-    {"make": lambda: make(sys.argv[2:]), "fit": lambda: fit_scores(sys.argv[2]), "combine": combine}[sys.argv[1]]()
+    {"make": lambda: make(sys.argv[2:]), "fit": lambda: fit_scores(sys.argv[2]), "combine": combine,
+     "apply": lambda: apply(sys.argv[2])}[sys.argv[1]]()

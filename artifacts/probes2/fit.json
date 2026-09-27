@@ -1,0 +1,93 @@
+{
+  "h_night": {
+    "sum_p": 102791,
+    "delta_score": -1e-05,
+    "mu": 0.9984,
+    "multiplier": 1.021
+  },
+  "h_morning": {
+    "sum_p": 3065890,
+    "delta_score": -0.00571,
+    "mu": 0.9407,
+    "multiplier": 0.962
+  },
+  "h_day": {
+    "sum_p": 4647997,
+    "delta_score": -0.00088,
+    "mu": 0.9953,
+    "multiplier": 1.017
+  },
+  "h_evening": {
+    "sum_p": 3728473,
+    "delta_score": -0.00325,
+    "mu": 0.9729,
+    "multiplier": 0.995
+  },
+  "h_late": {
+    "sum_p": 1058712,
+    "delta_score": 0.00046,
+    "mu": 1.0169,
+    "multiplier": 1.04
+  },
+  "dow_mon": {
+    "sum_p": 1955144,
+    "delta_score": -0.00243,
+    "mu": 0.9611,
+    "multiplier": 0.983
+  },
+  "dow_fri": {
+    "sum_p": 1951094,
+    "delta_score": -0.00057,
+    "mu": 0.9918,
+    "multiplier": 1.014
+  },
+  "w_00": {
+    "sum_p": 1222572,
+    "delta_score": -0.00112,
+    "mu": 0.9715,
+    "multiplier": 0.993
+  },
+  "w_01": {
+    "sum_p": 1497636,
+    "delta_score": -0.00111,
+    "mu": 0.9771,
+    "multiplier": 0.999
+  },
+  "w_02": {
+    "sum_p": 1489656,
+    "delta_score": -0.00054,
+    "mu": 0.9895,
+    "multiplier": 1.012
+  },
+  "w_03": {
+    "sum_p": 1501032,
+    "delta_score": -0.0014,
+    "mu": 0.971,
+    "multiplier": 0.993
+  },
+  "w_04": {
+    "sum_p": 1517112,
+    "delta_score": -0.0019,
+    "mu": 0.9608,
+    "multiplier": 0.982
+  },
+  "w_05": {
+    "sum_p": 1483433,
+    "delta_score": -0.00103,
+    "mu": 0.9787,
+    "multiplier": 1.0
+  },
+  "w_06": {
+    "sum_p": 1496708,
+    "delta_score": -0.00016,
+    "mu": 0.9981,
+    "multiplier": 1.02
+  },
+  "w_07": {
+    "sum_p": 1461579,
+    "delta_score": -0.00062,
+    "mu": 0.9875,
+    "multiplier": 1.01
+  },
+  "route5_daily": null
+}

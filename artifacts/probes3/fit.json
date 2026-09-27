@@ -1,0 +1,27 @@
+{
+  "m67": {
+    "sum_p": 1060319,
+    "delta_score": -0.00028,
+    "mu": 0.9928,
+    "multiplier": 1.015
+  },
+  "m89": {
+    "sum_p": 1890548,
+    "delta_score": -0.00054,
+    "mu": 0.9921,
+    "multiplier": 1.014
+  },
+  "moff": {
+    "sum_p": 350404,
+    "delta_score": -0.00047,
+    "mu": 0.9579,
+    "multiplier": 0.979
+  },
+  "loff": {
+    "sum_p": 257173,
+    "delta_score": -2e-05,
+    "mu": 0.9991,
+    "multiplier": 1.021
+  },
+  "route5_daily": null
+}

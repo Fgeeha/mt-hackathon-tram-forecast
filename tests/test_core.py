@@ -26,7 +26,8 @@ def test_wape():
     assert wape(np.array([10.0, 10.0]), np.array([5.0, 15.0])) == pytest.approx(0.5)
 
 
-@pytest.mark.parametrize("name", ["submission", "submission_route5_dec16", "submission_route5_full"])
+@pytest.mark.parametrize("name", ["submission", "submission_route5_dec16", "submission_route5_full",
+                                  "submission_calibrated_v1", "submission_calibrated_v2", "submission_calibrated_v3"])
 def test_submission_grid(name):
     sub = pl.read_csv(ARTIFACTS / f"{name}.csv", separator=";")
     sample = pl.read_csv(ARTIFACTS / "submission.csv", separator=";")
@@ -35,6 +36,15 @@ def test_submission_grid(name):
     assert sub.height == len(ROUTES) * 61 * 24
     assert sub.select(pl.struct("route", "date", "hour").n_unique()).item() == sub.height
     assert sub["prediction"].min() >= 0
+
+
+def test_service_matches_final_submission():
+    """Сервис отдаёт ровно то, что залито на лидерборд (scripts/probe.py apply)."""
+    sub = pl.read_csv(ARTIFACTS / "submission_calibrated_v3.csv", separator=";", try_parse_dates=True)
+    fc = pl.read_parquet(ARTIFACTS / "forecast.parquet").with_columns(pl.col("route").cast(pl.Int64))
+    j = sub.join(fc, on=["route", "date", "hour"], how="inner", suffix="_svc")
+    assert j.height == sub.height
+    assert (j["prediction"].cast(pl.Float64) == j["prediction_svc"]).all()
 
 
 def test_forecast_aggregation_consistent():

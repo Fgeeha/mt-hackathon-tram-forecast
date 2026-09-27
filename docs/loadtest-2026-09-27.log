@@ -1,0 +1,57 @@
+# Нагрузочный тест 2026-09-27T06:48:20Z, контейнер 4 vCPU / 2 ГБ, 4 воркера, hey -z 20s -c 50
+# docker: Docker version 29.7.2, build a7dcaa6
+=== /api/forecast?horizon=day&route=17&agg=hour
+  Average:	0.0176 secs
+  Requests/sec:	2835.3807
+  0.043 [204]	|
+  0.051 [4721]	|■■■■■
+  0.058 [4085]	|■■■■■
+  0.074 [56]	|
+  50% in 0.0097 secs
+  95% in 0.0547 secs
+  99% in 0.0592 secs
+  [200]	56730 responses
+=== /api/forecast?horizon=month&route=17&route=11&agg=day&k_weather=0.95
+  Average:	0.0171 secs
+  Requests/sec:	2922.1629
+  0.026 [224]	|
+  0.041 [229]	|
+  0.048 [2963]	|■■■■
+  0.071 [48]	|
+  50% in 0.0107 secs
+  95% in 0.0504 secs
+  99% in 0.0527 secs
+  [200]	58465 responses
+=== /api/forecast?horizon=year&agg=month
+  Average:	0.0526 secs
+  Requests/sec:	949.2951
+  0.083 [4994]	|■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.103 [4591]	|■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.183 [50]	|
+  50% in 0.0715 secs
+  95% in 0.0907 secs
+  99% in 0.1134 secs
+  [200]	19033 responses
+=== /api/forecast?horizon=day&route=1&stop_id=2594&hour_from=7&hour_to=10
+  Average:	0.0174 secs
+  Requests/sec:	2880.1515
+  0.012 [42150]	|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.019 [5425]	|■■■■■
+  0.041 [49]	|
+  0.078 [2]	|
+  50% in 0.0105 secs
+  95% in 0.0527 secs
+  99% in 0.0547 secs
+  [200]	57618 responses
+=== /api/export?format=csv&horizon=month&route=12&agg=day
+  Average:	0.0418 secs
+  Requests/sec:	1194.6435
+  0.025 [222]	|■
+  0.039 [2755]	|■■■■■■■■■■
+  0.053 [480]	|■■
+  50% in 0.0328 secs
+  95% in 0.0608 secs
+  99% in 0.0642 secs
+  [200]	23931 responses
+# docker stats после теста:
+tram-forecast-api-1 CPU=0.41% MEM=315.6MiB / 2GiB
